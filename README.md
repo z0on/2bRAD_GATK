@@ -1,4 +1,4 @@
-Whole genome de novo genotyping with 2bRAD
+Whole genome reference-based genotyping with 2bRAD
 ------------------------------------------
 
 Mikhail Matz, matz@utexas.edu
