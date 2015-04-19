@@ -16,6 +16,7 @@ Output:  thinned VCF, printed to STDOUT
 Example: thinner.pl vcf=denovo.recal.vcf > thinDenov.vcf
 
 NOTE: do not thin your variants if you want to calculate Tajima's D!
+Also, to select variants for dadi analysis, use --thin option in vcftools instead.
 
 ";
 
