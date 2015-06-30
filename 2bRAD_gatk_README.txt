@@ -266,7 +266,7 @@ echo '#!/bin/bash
 #$ -A mega2014
 #$ -pe 1way 12
 #$ -q normal   
-#$ -l h_rt=3:00:00
+#$ -l h_rt=24:00:00
 #$ -M matz@utexas.edu
 #$ -m be
 java -jar $TACC_GATK_DIR/GenomeAnalysisTK.jar -T UnifiedGenotyper \
