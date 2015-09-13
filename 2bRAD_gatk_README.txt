@@ -282,9 +282,9 @@ cat round2.vcf | perl -pe 's/\.fq\.trim\.bt2//g' | perl -pe 's/\.trim\.bt2//g' |
 #----------------------------------
 # variant quality score recalibration (VQSR)
 
-# extracting SNPs that are consistently genotyped in replicates, polymorphic, 
-# and have the fraction of alternative allele not too low and not too close to 0.5:
-replicatesMatch.pl vcf=round2.names.vcf replicates=clonepairs.tab polyonly=1 >vqsr.vcf
+# extracting SNPs that are consistently genotyped in replicates 
+# and have not too many heterozygotes:
+replicatesMatch.pl vcf=round2.names.vcf replicates=clonepairs.tab >vqsr.vcf
 
 # determining transition-transversion ratio for true snps (will need it for tranche calibration)
 vcftools --vcf vqsr.vcf --TsTv-summary

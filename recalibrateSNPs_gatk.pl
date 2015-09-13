@@ -11,7 +11,7 @@ in the set of variants that are reproducibly genotyped among replicates
 This script is for reference-based pipeline. Use recalibrateSNPs.pl for
 de novo pipeline.
 
-Three parameters (INFO field) are assessed for each SNP: 
+Four parameters (INFO field) are assessed for each SNP: 
 - fisher-strand (FS)
 - mapping quality (MQ)
 - quality by depth (QD) 
