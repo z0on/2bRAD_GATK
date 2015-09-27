@@ -331,8 +331,16 @@ echo 'retabvcf.pl vcf=gatk_after_vqsr.vcf tab=where/genome/is/mygenome_cc.tab > 
 launcher_creator.py -j rt -n rt -l rtj
 qsub rtj
 
-# thinning: leaving one SNP per tag, the one with max minor allele frequency
-thinner.pl vcf=retab.vcf >thin.vcf
+# discarding loci with too many heterozygotes, which are likely lumped paralogs
+# (by default, fraction of heterozygotes should not exceed maxhet=0.75)
+# this step can also filter for the fraction of missing genotypes (default maxmiss=0.5)
+hetfilter.pl vcf=retab.vcf >hetfilt.vcf
+
+# thinning SNP dataset - leaving one snp per tag
+# by default, it will leave the SNP with the highest minor allele frequency; this
+# is good for ADMIXTURE or Fst analysis
+# if you plan to use dadi, however, use it with the option criterion=maxDP-random
+thinner.pl vcf=hetfilt.vcf > thin.vcf
 
 # applying filter and selecting polymorphic biallelic loci genotyped in 80% or more individuals
 # for parametric (GATK-based) recalibration"
@@ -341,7 +349,7 @@ vcftools --vcf thin.vcf --remove-filtered-all --max-missing 0.8  --min-alleles 2
 
 # for non parametric (GATK-based) recalibration: replace --minQ 15 in the following line
 # with the quantile of the highest "gain" as reported by recalibrateSNPs_gatk.pl
-vcftools --vcf thin.vcf --minQ 15 --max-missing 0.8  --min-alleles 2 --max-alleles 2 --recode --recode-INFO-all --out filt0
+#vcftools --vcf thin.vcf --minQ 15 --max-missing 0.8  --min-alleles 2 --max-alleles 2 --recode --recode-INFO-all --out filt0
 
 # genotypic match between pairs of replicates 
 # (the most important one is the last one, Heterozygote Discovery Rate)	
@@ -354,12 +362,12 @@ repMatchStats.pl vcf=filt0.recode.vcf replicates=clonepairs.tab
 
 # creating final filtered file without clones (must list them in the file clones2remove):
 # (for non-parametric recalibration, replace --remove-filtered-all with --minQ [quantile of the highest gain] )
-vcftools --vcf thin.vcf --remove clones2remove --remove-filtered-all --max-missing 0.8  --min-alleles 2 --max-alleles 2 --recode --recode-INFO-all --out OK
+vcftools --vcf thin.vcf --remove clones2remove --remove-filtered-all --max-missing 0.8  --min-alleles 2 --max-alleles 2 --recode --recode-INFO-all --out final
 # After filtering, kept 19285 out of a possible 95211 Sites
 
 # creating unthinned dataset for Tajima's D calculations
 # (for non-parametric recalibration, replace --remove-filtered-all with --minQ [quantile of the highest gain] )
-vcftools --vcf retab.vcf --remove clones2remove --remove-filtered-all --max-missing 0.8  --min-alleles 2 --max-alleles 2 --recode --recode-INFO-all --out OKunthin
+vcftools --vcf hetfilt.vcf --remove clones2remove --remove-filtered-all --max-missing 0.8  --min-alleles 2 --max-alleles 2 --recode --recode-INFO-all --out finalUnthin
 # After filtering, kept 36677 out of a possible 174106 Sites
 
 # ===================================================
@@ -423,7 +431,7 @@ WRITER_FORMAT=GESTE_BAYE_SCAN
 GESTE_BAYE_SCAN_WRITER_DATA_TYPE_QUESTION=SNP
 ####################################
 
-java -Xmx1024m -Xms512m -jar ~/bin/PGDSpider_2.0.7.1/PGDSpider2-cli.jar -inputfile OK.recode.vcf -outputfile OK.bayescan -spid vcf2bayescan.spid 
+java -Xmx1024m -Xms512m -jar ~/bin/PGDSpider_2.0.7.1/PGDSpider2-cli.jar -inputfile final.recode.vcf -outputfile OK.bayescan -spid vcf2bayescan.spid 
 
 # Download and install BayeScan 
 cd ~/bin
@@ -442,29 +450,29 @@ qsub bsll
 #-------------
 # pi: (nucleotide diversity = expected heterozygosity)
 
-vcftools --vcf OK.recode.vcf --keep O.pop --site-pi
+vcftools --vcf final.recode.vcf --keep O.pop --site-pi
 mv out.sites.pi O.pi
-vcftools --vcf OK.recode.vcf  --keep K.pop --site-pi
+vcftools --vcf final.recode.vcf  --keep K.pop --site-pi
 mv out.sites.pi K.pi
 
 #-------------
 # Fst:
 
-vcftools --vcf OK.recode.vcf  --weir-fst-pop O.pop --weir-fst-pop K.pop  
+vcftools --vcf final.recode.vcf  --weir-fst-pop O.pop --weir-fst-pop K.pop  
 # 0.011437
 mv out.weir.fst OK.fst
 
 #-------------
 # Tajima's D (separately for two pops):
 
-vcftools --vcf OKunthin.recode.vcf  --keep K.pop --TajimaD 75000
+vcftools --vcf finalUnthin.recode.vcf  --keep K.pop --TajimaD 75000
 mv out.Tajima.D K.td
-vcftools --vcf OKunthin.recode.vcf  --keep O.pop --TajimaD 75000
+vcftools --vcf finalUnthin.recode.vcf  --keep O.pop --TajimaD 75000
 mv out.Tajima.D O.td
 
 #-------------
 # LD (using only bi-allelic sites within 15 kb of each other) - these two jobs take quite some time...
-echo 'vcftools --vcf OK.recode.vcf --geno-r2 --ld-window-bp 15000' >ld
+echo 'vcftools --vcf final.recode.vcf --geno-r2 --ld-window-bp 15000' >ld
 launcher_creator.py -j ld -n ld -l ldj
 cat ldj | perl -pe 's/12way/1way/' | perl -pe 's/h_rt=1/h_rt=12/' |perl -pe 's/development/normal/' > ldjj
 qsub ldjj
@@ -501,8 +509,9 @@ cd-
 # for denovo vcf, creating a dataset with fake "chr" chromosome designations
 cat denovo.vcf | perl -pe 's/locus(\d)(\d+)\t\d+/chr$1\t$2/' >chrom.recode.vcf
 
-# for GATK-based vcf, creating a thinned but not re-tabbed dataset with "chr" chromosome designations
-thinner.pl vcf=gatk_after_vqsr.vcf | perl -pe 's/chrom/chr/g' >thinchrom.vcf
+# for GATK-based vcf, creating a high-thinned but not re-tabbed dataset with "chr" chromosome designations
+hetfilter.pl vcf=gatk_after_vqsr.vcf >hetfiltRaw.vcf
+thinner.pl vcf=hetfiltRaw.vcf interval=5000 | perl -pe 's/chrom/chr/g' >thinchrom.vcf
 vcftools --vcf thinchrom.vcf --remove clones2remove --remove-filtered-all --max-missing 0.8  --min-alleles 2 --max-alleles 2 --recode --out chrom
 
 # reformatting VCF into plink binary BED format
