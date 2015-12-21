@@ -21,3 +21,5 @@ This repository contains the lab protocol for sample preparation, as well as scr
 - recalibrating variant quality scores based on genotyping replicates;
 - smart-thinning and final filtering;
 - quality assessment based on replicates.
+
+IMPORTANT: Do not sequence 2bRAD libraries on a HiSeq 4000 lane alone! Invariant bases (adaptor, restriction site) will be read very poorly, resulting in read trimming issues. Mix 20% of PhiX libraries with your 2bRAD samples to avoid this problem, or share lane with someone else's non-2bRAD samples. (If you already did, no worries - there is a solution; contact me.)
