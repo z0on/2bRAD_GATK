@@ -25,7 +25,7 @@ ref allele count
 alt allele count
 number of missing alleles
 
-Mikhail V. Matz, matz/@utexas.edu
+Mikhail V. Matz, matz\@utexas.edu
 
 ";
 
