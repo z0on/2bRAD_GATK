@@ -43,6 +43,7 @@ while(<BS>) {
 		warn "outlier : ",$_,"\n";
 	}
 }
+warn $#outs+1," outliers found\n";
 close BS;
 if ($#outs==0) { exit "no outliers found\n";}
 
@@ -55,7 +56,7 @@ while (<VCF>) {
 	$count++;
 	if (" @outs "=~/ $count /) {
 		if ($mode eq "delete") {
-			warn "$count : ",$_;
+#			warn "$count : ",$_;
 		}
 		else {
 			print $_;
