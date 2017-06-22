@@ -15,11 +15,16 @@ This collection of scripts is for reference-based genotyping with GATK pipeline,
 This repository contains the lab protocol for sample preparation, as well as scripts and walkthrough (2bRAD_gatk_README.txt) for:
 - trimming and quality filtering;
 - removing PCR duplicates;
-- mapping to reference genome;
-- recalibrating base qualities and realigning around indels;
+- mapping to reference genome with bowtie2;
 - varint calling using UnifiedGenotyper
 - recalibrating variant quality scores based on genotyping replicates;
-- smart-thinning and final filtering;
+- thinning and final filtering;
 - quality assessment based on replicates.
+
+Also included are walkthroughs for analysis (2brad_analysis.txt):
+- principal component analysis and outlier detection using *adegenet* package in R
+- computing Weir and Cockerham Fst
+- BayeScan for Fst outlier detection and removal
+- ADMIXTURE
 
 IMPORTANT: Do not sequence 2bRAD libraries on a HiSeq 4000 lane alone! Invariant bases (adaptor, restriction site) will be read very poorly, resulting in read trimming issues. Mix 20% of PhiX libraries with your 2bRAD samples to avoid this problem, or share lane with someone else's non-2bRAD samples. (If you already did, no worries - there is a solution; contact me.)
