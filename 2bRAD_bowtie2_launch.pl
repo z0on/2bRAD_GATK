@@ -33,4 +33,3 @@ foreach $fqf (@fqs) {
 	else { $outname=$fqf.".bt2.sam";}
 	print "bowtie2 --no-unal --score-min L,16,1 --local -L 16 -x $ref -U $fqf -S $outname\n";
 }
-
