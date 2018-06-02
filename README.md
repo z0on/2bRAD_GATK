@@ -1,6 +1,9 @@
 Whole genome reference-based genotyping with 2bRAD
 ------------------------------------------
 
+### This repository is  obsolete as of June 2018. All the scripts and walkthroughs for 2bRAD genotyping, including reference-based, are now contained in the 2bRAD_denovo repository.
+
+
 Mikhail Matz, matz@utexas.edu
 
 2bRAD has been described in Wang et al 2012 
